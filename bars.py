@@ -1,48 +1,36 @@
 import json
 import sys
-from math import cos, asin, sqrt
 from operator import itemgetter
+import gpxpy.geo
 
 
-def dict_of_names_and_seats_of_bars(data):
+def dict_of_names_and_seats_of_bars(file_of_bars):
     list_of_bars = dict()
-    features = data["features"]
-    for feature in features:
+    for feature in file_of_bars["features"]:
         name = feature["properties"]["Attributes"]["Name"]
         seats_count = feature["properties"]['Attributes']["SeatsCount"]
         list_of_bars[name] = seats_count
     return list_of_bars
 
 
-def get_biggest_bar(data):
-    bars = dict_of_names_and_seats_of_bars(data)
+def get_biggest_bar(file_of_bars):
+    bars = dict_of_names_and_seats_of_bars(file_of_bars)
     biggest_bar = [bar_name for bar_name, seats_count in bars.items() if seats_count == max(bars.values())]
     return biggest_bar
 
 
-def get_smallest_bar(data):
-    bars = dict_of_names_and_seats_of_bars(data)
+def get_smallest_bar(file_of_bars):
+    bars = dict_of_names_and_seats_of_bars(file_of_bars)
     smallest_bar = [bar_name for bar_name, seats_count in bars.items() if seats_count == min(bars.values())]
     return smallest_bar
 
 
-def count_distance_between_coordinates(lat1, lon1, lat2, lon2):
-    p = 0.017453292519943295
-    a = 0.5 - cos((lat2 - lat1) * p) / 2 + cos(lat1 * p) * cos(lat2 * p) * (1 - cos((lon2 - lon1) * p)) / 2
-    return 12742 * asin(sqrt(a))
-
-
-def find_closest_coordinates(data, v):
-    return min(data, key=lambda p: count_distance_between_coordinates(v[0], v[1], p[0], p[1]))
-
-
-def get_closest_bar(bars, longitude, latitude):
+def get_closest_bar(file_of_bars, longitude, latitude):
     list_of_bars = list()
-    for bar in bars:
+    for bar in file_of_bars:
         bar_name = bar["properties"]['Attributes']["Name"]
         bar_coordinates = bar["geometry"]["coordinates"]
-        distance_from_bar = count_distance_between_coordinates(longitude, latitude, bar_coordinates[0],
-                                                               bar_coordinates[1])
+        distance_from_bar = gpxpy.geo.haversine_distance(longitude, latitude, bar_coordinates[0], bar_coordinates[1])
         list_of_bars.append((bar_name, distance_from_bar))
     sorted_by_distance_list_of_bars = sorted(list_of_bars, key=itemgetter(1))
     return sorted_by_distance_list_of_bars[0][0]
