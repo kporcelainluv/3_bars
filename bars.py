@@ -7,9 +7,9 @@ import gpxpy.geo
 def dict_of_names_and_seats_of_bars(file_of_bars):
     list_of_bars = dict()
     for feature in file_of_bars["features"]:
-        name = feature["properties"]["Attributes"]["Name"]
+        bar_name = feature["properties"]["Attributes"]["Name"]
         seats_count = feature["properties"]['Attributes']["SeatsCount"]
-        list_of_bars[name] = seats_count
+        list_of_bars[bar_name] = seats_count
     return list_of_bars
 
 
