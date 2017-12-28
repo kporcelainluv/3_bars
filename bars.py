@@ -17,55 +17,43 @@ def get_smallest_bar(bars):
     return min(bars, key=lambda x: get_seats_count_from_bar(x))
 
 
-def get_closest_bar(bars, long, lat):
-    def distance(bars):
-        input_long = bars["geometry"]["coordinates"][0]
-        input_lat = bars["geometry"]["coordinates"][1]
-        dist_user_and_bar = math.fabs(long - input_long) + math.fabs(lat - input_lat)
-        return dist_user_and_bar
-
-    closest_bar = min(bars, key=distance)
+def get_closest_bar(bars, distance_between_user_and_bar):
+    closest_bar = min(bars, key=distance_between_user_and_bar)
     return closest_bar
-
-
-def get_name_of_the_bar(bar):
-    return bar["properties"]['Attributes']["Name"]
-
-
-def get_address_of_the_bar(bar):
-    return bar["properties"]['Attributes']["Address"]
 
 
 def get_seats_count_from_bar(bar):
     return int(bar["properties"]['Attributes']["SeatsCount"])
 
 
-def get_phone_number_of_bar(bar):
-    return bar["properties"]['Attributes']["PublicPhone"][0]["PublicPhone"]
-
-
-def print_bar_info(bar):
-    print("Количество мест: ", get_seats_count_from_bar(bar))
-    print("Адрес: ", get_address_of_the_bar(bar))
-    print("Телефон: ", get_phone_number_of_bar(bar))
-    return "   "
+def get_bar_info(bar):
+    print(bar["properties"]['Attributes']["Name"])
+    print("Адрес:", bar["properties"]['Attributes']["Address"])
+    print("Число мест:", int(bar["properties"]['Attributes']["SeatsCount"]))
+    print("Тел.:", bar["properties"]['Attributes']["PublicPhone"][0]["PublicPhone"])
+    return ""
 
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        path_to_file = sys.argv[1]
-        bars = collect_data_from_json(path_to_file)
-        biggest_bar = get_biggest_bar(bars)
-        smallest_bar = get_smallest_bar(bars)
+        bars = collect_data_from_json(sys.argv[1])
 
-        print("Самый большой бар: ", get_name_of_the_bar(biggest_bar))
-        print(print_bar_info(biggest_bar))
-        print("Самый маленький бар: ", get_name_of_the_bar(smallest_bar))
-        print(print_bar_info(smallest_bar))
+        print("Самый большой бар: ", end="")
+        print(get_bar_info(get_biggest_bar(bars)))
+        print("Самый маленький бар: ", end="")
+        print(get_bar_info(get_smallest_bar(bars)))
 
-        longitude = float(input("Введите вашу долготу: ", ))
-        latitude = float(input("Введите вашу широту: ", ))
-        closest_bar = get_closest_bar(bars, longitude, latitude)
+        input_long = float(input("Введите вашу долготу: ", ))
+        input_lat = float(input("Введите вашу широту: ", ))
 
-        print("Ближайший бар: ", get_name_of_the_bar(closest_bar))
-        print(print_bar_info(closest_bar))
+
+        def distance_between_user_and_bar(bars):
+            long = bars["geometry"]["coordinates"][0]
+            lat = bars["geometry"]["coordinates"][1]
+            dist_between_user_and_bar = math.sqrt((long - input_long) + math.fabs(lat - input_lat))
+            return dist_between_user_and_bar
+
+
+        closest_bar = get_closest_bar(bars, distance_between_user_and_bar)
+        print("Ближайший бар: ", end="")
+        print(get_bar_info(closest_bar))
