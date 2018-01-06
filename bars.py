@@ -17,20 +17,21 @@ def get_smallest_bar(bars):
     return min(bars, key=lambda x: get_seats_count_from_bar(x))
 
 
-def get_closest_bar(bars, distance_between_user_and_bar):
-    closest_bar = min(bars, key=distance_between_user_and_bar)
+def get_closest_bar(bars, distance):
+    closest_bar = min(bars, key=distance)
     return closest_bar
 
 
 def get_seats_count_from_bar(bar):
-    return int(bar["properties"]['Attributes']["SeatsCount"])
+    return int(bar["properties"]["Attributes"]["SeatsCount"])
 
 
-def get_bar_info(bar):
-    print(bar["properties"]['Attributes']["Name"])
-    print("Адрес:", bar["properties"]['Attributes']["Address"])
-    print("Число мест:", int(bar["properties"]['Attributes']["SeatsCount"]))
-    print("Тел.:", bar["properties"]['Attributes']["PublicPhone"][0]["PublicPhone"])
+def print_bar_info(bar, bar_phrase):
+    print("Самый " + bar_phrase + " бар: ")
+    print(bar["properties"]["Attributes"]["Name"])
+    print("Адрес:", bar["properties"]["Attributes"]["Address"])
+    print("Число мест:", int(bar["properties"]["Attributes"]["SeatsCount"]))
+    print("Тел.:", bar["properties"]["Attributes"]["PublicPhone"][0]["PublicPhone"])
     return ""
 
 
@@ -38,22 +39,19 @@ if __name__ == '__main__':
     if len(sys.argv) > 1:
         bars = collect_data_from_json(sys.argv[1])
 
-        print("Самый большой бар: ", end="")
-        print(get_bar_info(get_biggest_bar(bars)))
-        print("Самый маленький бар: ", end="")
-        print(get_bar_info(get_smallest_bar(bars)))
+        print(print_bar_info(get_biggest_bar(bars), 'большой'))
+        print(print_bar_info(get_smallest_bar(bars), "маленький"))
 
         input_long = float(input("Введите вашу долготу: ", ))
         input_lat = float(input("Введите вашу широту: ", ))
 
 
-        def distance_between_user_and_bar(bars):
-            long = bars["geometry"]["coordinates"][0]
-            lat = bars["geometry"]["coordinates"][1]
-            dist_between_user_and_bar = math.sqrt((long - input_long) + math.fabs(lat - input_lat))
-            return dist_between_user_and_bar
+        def distance(bar):
+            long = bar["geometry"]["coordinates"][0]
+            lat = bar["geometry"]["coordinates"][1]
+            distance_between_user_and_bar = math.sqrt(math.fabs(long - input_long) + math.fabs(lat - input_lat))
+            return distance_between_user_and_bar
 
 
-        closest_bar = get_closest_bar(bars, distance_between_user_and_bar)
-        print("Ближайший бар: ", end="")
-        print(get_bar_info(closest_bar))
+        closest_bar = get_closest_bar(bars, distance)
+        print(print_bar_info(closest_bar), "ближайший")
